@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VLOO Host Flex Calendar Prototype</title>
+    <style>
+      :root {
+        --bg: #072739;
+        --panel: #082f42;
+        --ink: #072739;
+        --surface: #e0f0fb;
+        --border: #a8c8e0;
+        --field-bg: #0b3447;
+        --field-border: #a8c8e0;
+        --brand: #006988;
+        --cta: #4c85b1;
+        --cta-hover: #3e6f94;
+        --pill: #608ac0;
+        --danger: #e95848;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(128, 209, 246, 0.16), transparent 30%),
+          linear-gradient(180deg, #0a2a3c 0%, var(--bg) 100%);
+        color: #fff;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button, input, select { font: inherit; }
+
+      .page { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 56px; }
+      .backline { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; color: var(--surface); font-weight: 750; }
+      .backline span { display: grid; width: 28px; height: 28px; place-items: center; border: 2px solid rgba(168, 200, 224, .74); border-radius: 999px; color: #80d1f6; }
+      .topbar { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+      .eyebrow { margin: 0 0 6px; color: #80d1f6; font-size: 13px; font-weight: 650; }
+      h1, h2, p { margin-top: 0; }
+      h1 { margin-bottom: 8px; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; }
+      .lead { max-width: 660px; margin-bottom: 0; color: #c8dce6; line-height: 1.55; }
+      .space-select, input { border: 3px solid var(--field-border); border-radius: 12px; background: var(--field-bg); padding: 11px 14px; color: #fff; }
+      .space-select {
+        min-width: 250px;
+        height: 42px;
+        padding: 6px 14px;
+        line-height: 20px;
+      }
+      .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+      .metric { border: 2px solid rgba(168, 200, 224, .68); border-radius: 12px; background: rgba(8, 47, 66, .72); padding: 16px; }
+      .metric span { display: block; color: var(--border); font-size: 13px; font-weight: 650; }
+      .metric strong { display: block; margin-top: 8px; font-size: 24px; }
+      .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(340px, .75fr); gap: 16px; align-items: start; }
+      .section { overflow: hidden; border: 2px solid rgba(168, 200, 224, .68); border-radius: 12px; background: var(--panel); box-shadow: 0 18px 46px rgba(0, 0, 0, .18); }
+      .section-head { display: flex; justify-content: space-between; gap: 18px; border-bottom: 2px solid rgba(168, 200, 224, .56); padding: 18px 20px; }
+      .section h2 { margin-bottom: 6px; font-size: 19px; }
+      .section p { margin-bottom: 0; color: #c8dce6; font-size: 14px; line-height: 1.45; }
+      .month-controls { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+      .icon-btn { display: grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 999px; background: #fff; color: var(--brand); cursor: pointer; }
+      .month-label { min-width: 148px; text-align: center; font-weight: 750; }
+      .calendar { background: #fff; padding: 18px 20px 20px; }
+      .weekdays, .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+      .weekdays { margin-bottom: 8px; }
+      .weekday { color: var(--ink); font-size: 12px; font-weight: 750; text-align: center; }
+      .day { min-height: 92px; border: 2px solid #e3edf2; border-radius: 10px; background: #fff; color: var(--ink); padding: 9px; text-align: left; cursor: pointer; }
+      .day:hover { border-color: var(--field-border); background: #f8fdff; }
+      .day.empty { visibility: hidden; }
+      .day.closed { background: #f7f8f9; color: #87959b; }
+      .day.selected { border-color: var(--brand); background: var(--brand); color: #fff; box-shadow: 0 0 0 3px rgba(0, 105, 136, .18); }
+      .date-number { display: flex; justify-content: space-between; font-weight: 800; }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--brand); margin-top: 5px; }
+      .closed .dot { background: #d0d0d0; }
+      .selected .dot { background: #fff; }
+      .day-label, .desk-count { display: block; margin-top: 10px; color: #6d7d86; font-size: 12px; font-weight: 760; }
+      .desk-count { margin-top: 4px; color: var(--ink); font-size: 13px; font-weight: 840; }
+      .selected .day-label, .selected .desk-count { color: #fff; }
+      .side { display: grid; gap: 16px; }
+      .form, .selected-list { padding: 18px 20px 20px; }
+      .field { margin-bottom: 16px; }
+      .status-choice { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .status-option { border: 2px solid rgba(168, 200, 224, .72); border-radius: 12px; background: rgba(11, 52, 71, .84); padding: 10px 12px; color: var(--surface); font-weight: 750; cursor: pointer; }
+      .status-option.active { border-color: var(--field-border); background: var(--pill); color: #fff; }
+      label { display: block; margin-bottom: 8px; color: var(--surface); font-size: 13px; font-weight: 760; }
+      input { width: 100%; outline: none; }
+      input:focus, .space-select:focus { border-color: #c7e1f1; box-shadow: 0 0 0 3px rgba(168, 200, 224, .18); }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .primary, .secondary { border-radius: 8px; padding: 11px 14px; font-weight: 760; cursor: pointer; }
+      .primary { border: 1px solid var(--cta); background: var(--cta); color: #fff; }
+      .primary:hover { border-color: var(--cta-hover); background: var(--cta-hover); }
+      .secondary { border: 2px solid rgba(168, 200, 224, .72); background: transparent; color: var(--surface); }
+      .notice { margin-top: 14px; border-radius: 8px; background: #f4c6a7; padding: 11px 12px; color: #4d321f; font-size: 13px; line-height: 1.45; }
+      .notice.success { background: rgba(128, 209, 246, .16); color: #c7efff; }
+      .selected-list { display: grid; gap: 10px; }
+      .selected-row { display: grid; grid-template-columns: minmax(0, 1fr) 104px 32px; gap: 10px; align-items: center; border: 2px solid rgba(168, 200, 224, .64); border-radius: 12px; background: rgba(11, 52, 71, .84); padding: 10px; }
+      .date-title { display: block; color: #fff; font-size: 14px; font-weight: 800; }
+      .date-subtitle { display: block; margin-top: 3px; color: var(--border); font-size: 12px; }
+      .mini-input { padding: 8px 10px; }
+      .remove { display: grid; width: 32px; height: 32px; place-items: center; border: 2px solid rgba(168, 200, 224, .72); border-radius: 10px; background: rgba(255,255,255,.06); color: var(--danger); cursor: pointer; }
+
+      @media (max-width: 920px) {
+        .topbar, .layout { display: grid; grid-template-columns: 1fr; }
+        .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 620px) {
+        .page { width: min(100% - 20px, 1180px); padding-top: 20px; }
+        .summary { grid-template-columns: 1fr; }
+        .section-head { display: grid; }
+        .day { min-height: 74px; padding: 7px; }
+        .day-label { display: none; }
+        .desk-count { font-size: 11px; }
+        .calendar { padding: 14px 12px; }
+        .weekdays, .days { gap: 5px; }
+        .selected-row { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div>
+          <h1>Flexible stays</h1>
+          <p class="lead">Manage which days are open for Flexible Stay bookings and set how many desks can be booked on selected dates.</p>
+        </div>
+        <select class="space-select" aria-label="Select space">
+          <option>VLOO Workspace - Oslo</option>
+          <option>Meeting Hub - Bergen</option>
+          <option>Studio Desk Area</option>
+        </select>
+      </header>
+
+      <section class="summary" aria-label="Availability summary">
+        <div class="metric"><span>Open days</span><strong id="openDays">0</strong></div>
+        <div class="metric"><span>Closed days</span><strong id="closedDays">0</strong></div>
+        <div class="metric"><span>Selected dates</span><strong id="selectedCount">0</strong></div>
+        <div class="metric"><span>Default desks</span><strong id="defaultDeskMetric">8</strong></div>
+      </section>
+
+      <div class="layout">
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <h2>Availability overview</h2>
+              <p>Open days show available desks. Select one or more dates to open, close, or adjust them.</p>
+            </div>
+            <div class="month-controls">
+              <button class="icon-btn" aria-label="Previous month">‹</button>
+              <div class="month-label">May 2026</div>
+              <button class="icon-btn" aria-label="Next month">›</button>
+            </div>
+          </div>
+          <div class="calendar">
+            <div class="weekdays">
+              <div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div><div class="weekday">Sun</div>
+            </div>
+            <div class="days" id="calendarDays"></div>
+          </div>
+        </section>
+
+        <aside class="side">
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <h2>Set availability</h2>
+                <p>Choose dates in the calendar, then open or close those dates for Flexible Stay bookings.</p>
+              </div>
+            </div>
+            <div class="form">
+              <div class="field">
+                <label>Availability status</label>
+                <div class="status-choice" role="group" aria-label="Availability status">
+                  <button class="status-option active" id="openStatus" type="button">Open for booking</button>
+                  <button class="status-option" id="closedStatus" type="button">Closed</button>
+                </div>
+              </div>
+              <div class="field" id="deskField">
+                <label for="availableDesks">Available desks</label>
+                <input id="availableDesks" type="number" min="1" max="40" value="8" />
+              </div>
+              <div class="actions">
+                <button class="primary" id="saveButton" type="button">Save changes</button>
+                <button class="secondary" id="clearButton" type="button">Clear</button>
+              </div>
+              <div class="notice" id="message">Select dates in the calendar to update their availability.</div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <h2>Customize selected dates</h2>
+                <p>Review selected dates and adjust available desks per day before saving.</p>
+              </div>
+            </div>
+            <div class="selected-list" id="selectedList"><p>No dates selected.</p></div>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <script>
+      const calendarDays = document.querySelector("#calendarDays");
+      const selectedList = document.querySelector("#selectedList");
+      const openDays = document.querySelector("#openDays");
+      const closedDays = document.querySelector("#closedDays");
+      const selectedCount = document.querySelector("#selectedCount");
+      const defaultDeskMetric = document.querySelector("#defaultDeskMetric");
+      const availableDesks = document.querySelector("#availableDesks");
+      const deskField = document.querySelector("#deskField");
+      const openStatus = document.querySelector("#openStatus");
+      const closedStatus = document.querySelector("#closedStatus");
+      const saveButton = document.querySelector("#saveButton");
+      const clearButton = document.querySelector("#clearButton");
+      const message = document.querySelector("#message");
+
+      const availability = new Map([[1,8],[4,6],[5,6],[6,8],[7,8],[8,4],[11,8],[12,8],[13,8],[14,8],[15,3],[18,8],[19,8],[20,8],[21,8],[22,5],[25,8],[26,8]]);
+      const selected = new Set();
+      const customCapacities = new Set();
+      let selectedStatus = "open";
+
+      function formatDate(day) { return `May ${day}, 2026`; }
+
+      function renderCalendar() {
+        calendarDays.innerHTML = "";
+        for (let i = 0; i < 4; i += 1) calendarDays.insertAdjacentHTML("beforeend", '<div class="day empty"></div>');
+        for (let day = 1; day <= 31; day += 1) {
+          const desks = availability.get(day) || 0;
+          const isOpen = desks > 0;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = ["day", isOpen ? "open" : "closed", selected.has(day) ? "selected" : ""].join(" ");
+          button.innerHTML = `<span class="date-number">${day}<span class="dot"></span></span><span class="day-label">${isOpen ? "Available" : "Closed"}</span><span class="desk-count">${isOpen ? `${desks} desks` : "Closed"}</span>`;
+          button.addEventListener("click", () => {
+            if (selected.has(day)) { selected.delete(day); customCapacities.delete(day); }
+            else { selected.add(day); if (!availability.has(day) && selectedStatus === "open") availability.set(day, Number(availableDesks.value) || 1); }
+            message.className = "notice";
+            message.textContent = selected.size ? "Adjust desks for the selected dates, then save changes." : "Select dates in the calendar to update their availability.";
+            render();
+          });
+          calendarDays.appendChild(button);
+        }
+      }
+
+      function renderMetrics() {
+        const open = [...availability.values()].filter((value) => value > 0).length;
+        openDays.textContent = open;
+        closedDays.textContent = 31 - open;
+        selectedCount.textContent = selected.size;
+        defaultDeskMetric.textContent = availableDesks.value || "1";
+      }
+
+      function renderSelectedList() {
+        if (!selected.size) { selectedList.innerHTML = "<p>No dates selected.</p>"; return; }
+        selectedList.innerHTML = "";
+        [...selected].sort((a, b) => a - b).forEach((day) => {
+          const desks = availability.get(day) || 0;
+          const row = document.createElement("div");
+          row.className = "selected-row";
+          row.innerHTML = `<div><span class="date-title">${formatDate(day)}</span><span class="date-subtitle">Current status: ${desks > 0 ? `${desks} desks` : "Closed"}</span></div><input class="mini-input" type="number" min="1" value="${desks || availableDesks.value || 1}" ${selectedStatus === "closed" ? "disabled" : ""} /><button class="remove" type="button">×</button>`;
+          row.querySelector("input").addEventListener("input", (event) => {
+            availability.set(day, Math.max(1, Number(event.target.value) || 1));
+            customCapacities.add(day);
+            renderCalendar();
+            renderMetrics();
+          });
+          row.querySelector("button").addEventListener("click", () => { selected.delete(day); customCapacities.delete(day); render(); });
+          selectedList.appendChild(row);
+        });
+      }
+
+      function render() { renderCalendar(); renderSelectedList(); renderMetrics(); }
+
+      availableDesks.addEventListener("input", () => { defaultDeskMetric.textContent = availableDesks.value || "1"; });
+      openStatus.addEventListener("click", () => {
+        selectedStatus = "open";
+        openStatus.classList.add("active");
+        closedStatus.classList.remove("active");
+        deskField.style.display = "";
+        message.className = "notice";
+        message.textContent = selected.size ? "Selected dates will be opened for booking." : "Select dates in the calendar to open them for booking.";
+        render();
+      });
+      closedStatus.addEventListener("click", () => {
+        selectedStatus = "closed";
+        closedStatus.classList.add("active");
+        openStatus.classList.remove("active");
+        deskField.style.display = "none";
+        message.className = "notice";
+        message.textContent = selected.size ? "Selected dates will be closed for booking." : "Select dates in the calendar to close them for booking.";
+        render();
+      });
+      saveButton.addEventListener("click", () => {
+        if (!selected.size) { message.className = "notice"; message.textContent = "Select at least one date before saving."; return; }
+        const value = Number(availableDesks.value);
+        if (selectedStatus === "open" && (!value || value < 1)) { message.className = "notice"; message.textContent = "Available desks must be at least 1."; return; }
+        selected.forEach((day) => {
+          if (selectedStatus === "closed") { availability.set(day, 0); customCapacities.delete(day); return; }
+          availability.set(day, customCapacities.has(day) ? availability.get(day) : value);
+        });
+        message.className = "notice success";
+        message.textContent = selectedStatus === "open" ? "Selected dates are open for booking." : "Selected dates are closed for booking.";
+        selected.clear();
+        customCapacities.clear();
+        render();
+      });
+      clearButton.addEventListener("click", () => {
+        selected.clear();
+        customCapacities.clear();
+        message.className = "notice";
+        message.textContent = "Selection cleared.";
+        render();
+      });
+      render();
+    </script>
+  </body>
+</html>
