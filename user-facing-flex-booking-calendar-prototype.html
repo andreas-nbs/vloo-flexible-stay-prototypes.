@@ -155,7 +155,7 @@
         button.type = "button";
         button.disabled = !canBook;
         button.className = ["day", canBook ? "available" : "unavailable", isPast ? "past" : "", selected.has(day) ? "selected" : ""].join(" ");
-        button.innerHTML = `<span class="day-num">${day}</span><span class="day-meta">${canBook ? `${available.get(day)} available` : ""}</span>`;
+        button.innerHTML = `<span class="day-num">${day}</span><span class="day-meta">${canBook ? `${available.get(day)} desks` : ""}</span>`;
         button.addEventListener("click", () => {
           if (selected.has(day)) selected.delete(day);
           else selected.add(day);
