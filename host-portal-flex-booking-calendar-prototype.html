@@ -98,6 +98,15 @@
       .date-subtitle { display: block; margin-top: 3px; color: var(--border); font-size: 12px; }
       .mini-input { padding: 8px 10px; }
       .remove { display: grid; width: 32px; height: 32px; place-items: center; border: 2px solid rgba(168, 200, 224, .72); border-radius: 10px; background: rgba(255,255,255,.06); color: var(--danger); cursor: pointer; }
+      .hold-list { display: grid; gap: 12px; padding: 18px 20px 20px; }
+      .hold-card { border: 2px solid rgba(168, 200, 224, .64); border-radius: 12px; background: rgba(11, 52, 71, .84); padding: 14px; }
+      .hold-top { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 12px; }
+      .hold-title { display: block; color: #fff; font-size: 14px; font-weight: 800; }
+      .hold-subtitle { display: block; margin-top: 4px; color: var(--border); font-size: 12px; line-height: 1.4; }
+      .hold-status { border-radius: 999px; background: rgba(128, 209, 246, .18); color: #c7efff; padding: 5px 9px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+      .hold-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .release { border: 2px solid rgba(168, 200, 224, .72); border-radius: 8px; background: transparent; color: var(--surface); padding: 10px 12px; font-weight: 760; cursor: pointer; }
+      .release:disabled { cursor: default; opacity: .62; }
 
       @media (max-width: 920px) {
         .topbar, .layout { display: grid; grid-template-columns: 1fr; }
@@ -195,6 +204,30 @@
             </div>
             <div class="selected-list" id="selectedList"><p>No dates selected.</p></div>
           </section>
+
+          <section class="section">
+            <div class="section-head">
+              <div>
+                <h2>Calendar holds</h2>
+                <p>Remove dates from the live calendar without rejecting the request.</p>
+              </div>
+            </div>
+            <div class="hold-list">
+              <div class="hold-card">
+                <div class="hold-top">
+                  <div>
+                    <span class="hold-title">Extended Stay request</span>
+                    <span class="hold-subtitle">May 12-22, 2026. Dates are currently blocked in the live calendar.</span>
+                  </div>
+                  <span class="hold-status" id="holdStatus">Added to calendar</span>
+                </div>
+                <div class="hold-actions">
+                  <button class="release" id="releaseHoldButton" type="button">Remove from calendar</button>
+                </div>
+                <div class="notice" id="holdMessage">The request stays active if dates are removed from the calendar.</div>
+              </div>
+            </div>
+          </section>
         </aside>
       </div>
     </main>
@@ -213,6 +246,9 @@
       const saveButton = document.querySelector("#saveButton");
       const clearButton = document.querySelector("#clearButton");
       const message = document.querySelector("#message");
+      const releaseHoldButton = document.querySelector("#releaseHoldButton");
+      const holdStatus = document.querySelector("#holdStatus");
+      const holdMessage = document.querySelector("#holdMessage");
 
       const availability = new Map([[1,8],[4,6],[5,6],[6,8],[7,8],[8,4],[11,8],[12,8],[13,8],[14,8],[15,3],[18,8],[19,8],[20,8],[21,8],[22,5],[25,8],[26,8]]);
       const selected = new Set();
@@ -310,6 +346,13 @@
         message.className = "notice";
         message.textContent = "Selection cleared.";
         render();
+      });
+      releaseHoldButton.addEventListener("click", () => {
+        holdStatus.textContent = "Released";
+        holdMessage.className = "notice success";
+        holdMessage.textContent = "Dates removed from the live calendar. The request is still active.";
+        releaseHoldButton.textContent = "Removed from calendar";
+        releaseHoldButton.disabled = true;
       });
       render();
     </script>
