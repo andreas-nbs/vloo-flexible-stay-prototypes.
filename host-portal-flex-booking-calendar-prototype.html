@@ -105,8 +105,8 @@
       .hold-subtitle { display: block; margin-top: 4px; color: var(--border); font-size: 12px; line-height: 1.4; }
       .hold-status { border-radius: 999px; background: rgba(128, 209, 246, .18); color: #c7efff; padding: 5px 9px; font-size: 11px; font-weight: 800; white-space: nowrap; }
       .hold-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-      .release { border: 2px solid rgba(168, 200, 224, .72); border-radius: 8px; background: transparent; color: var(--surface); padding: 10px 12px; font-weight: 760; cursor: pointer; }
-      .release:disabled { cursor: default; opacity: .62; }
+      .remove-calendar { border: 2px solid rgba(168, 200, 224, .72); border-radius: 8px; background: transparent; color: var(--surface); padding: 10px 12px; font-weight: 760; cursor: pointer; }
+      .remove-calendar:disabled { cursor: default; opacity: .62; }
 
       @media (max-width: 920px) {
         .topbar, .layout { display: grid; grid-template-columns: 1fr; }
@@ -222,7 +222,7 @@
                   <span class="hold-status" id="holdStatus">Added to calendar</span>
                 </div>
                 <div class="hold-actions">
-                  <button class="release" id="releaseHoldButton" type="button">Remove from calendar</button>
+                  <button class="remove-calendar" id="removeHoldButton" type="button">Remove from calendar</button>
                 </div>
                 <div class="notice" id="holdMessage">The request stays active if dates are removed from the calendar.</div>
               </div>
@@ -246,7 +246,7 @@
       const saveButton = document.querySelector("#saveButton");
       const clearButton = document.querySelector("#clearButton");
       const message = document.querySelector("#message");
-      const releaseHoldButton = document.querySelector("#releaseHoldButton");
+      const removeHoldButton = document.querySelector("#removeHoldButton");
       const holdStatus = document.querySelector("#holdStatus");
       const holdMessage = document.querySelector("#holdMessage");
 
@@ -347,12 +347,12 @@
         message.textContent = "Selection cleared.";
         render();
       });
-      releaseHoldButton.addEventListener("click", () => {
-        holdStatus.textContent = "Released";
+      removeHoldButton.addEventListener("click", () => {
+        holdStatus.textContent = "Removed";
         holdMessage.className = "notice success";
         holdMessage.textContent = "Dates removed from the live calendar. The request is still active.";
-        releaseHoldButton.textContent = "Removed from calendar";
-        releaseHoldButton.disabled = true;
+        removeHoldButton.textContent = "Removed from calendar";
+        removeHoldButton.disabled = true;
       });
       render();
     </script>
